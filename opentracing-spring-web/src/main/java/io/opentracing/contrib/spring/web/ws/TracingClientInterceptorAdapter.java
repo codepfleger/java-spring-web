@@ -26,9 +26,12 @@ public class TracingClientInterceptorAdapter extends ClientInterceptorAdapter {
     private final Tracer tracer;
     private final List<ClientInterceptorAdapterSpanDecorator> decorators;
 
-
     public TracingClientInterceptorAdapter() {
-        this(GlobalTracer.get(), Collections.singletonList(ClientInterceptorAdapterSpanDecorator.STANDARD_LOGS));
+        this(GlobalTracer.get());
+    }
+
+    public TracingClientInterceptorAdapter(Tracer tracer) {
+        this(tracer, Collections.singletonList(ClientInterceptorAdapterSpanDecorator.STANDARD_LOGS));
     }
 
     public TracingClientInterceptorAdapter(Tracer tracer, List<ClientInterceptorAdapterSpanDecorator> decorators) {

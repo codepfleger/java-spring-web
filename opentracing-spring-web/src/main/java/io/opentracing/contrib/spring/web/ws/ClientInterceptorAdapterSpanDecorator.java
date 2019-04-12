@@ -51,18 +51,25 @@ public interface ClientInterceptorAdapterSpanDecorator {
             if (messageContext.getRequest() instanceof SoapMessage) {
                 SoapMessage soapMessage = (SoapMessage) messageContext.getRequest();
 
-                String soapAction = soapMessage.getSoapAction();
+                String soapAction = extractSoapAction(soapMessage);
                 SoapBody body = soapMessage.getSoapBody();
-                if (body.getPayloadSource() instanceof DOMSource) {
-                    Node node = ((DOMSource) body.getPayloadSource()).getNode();
-                    return node.getLocalName();
-                } else if (!StringUtils.isEmpty(soapAction)) {
-                    soapAction = soapAction.replaceAll("\"", "");
+                if (!StringUtils.isEmpty(soapAction)) {
                     String[] soapActionArray = soapAction.split("/");
                     return soapActionArray[soapActionArray.length - 1];
+                } else if (body.getPayloadSource() instanceof DOMSource) {
+                    Node node = ((DOMSource) body.getPayloadSource()).getNode();
+                    return node.getLocalName();
                 }
             }
 
+            return null;
+        }
+
+        private String extractSoapAction(SoapMessage soapMessage) {
+            String soapAction = soapMessage.getSoapAction();
+            if(soapAction != null) {
+                return soapAction.replaceAll("\"", "");
+            }
             return null;
         }
 

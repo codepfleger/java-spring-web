@@ -6,6 +6,9 @@ import java.util.regex.Pattern;
 
 import javax.servlet.Filter;
 
+import io.opentracing.contrib.spring.web.interceptor.itest.common.app.TestEndpoint;
+import io.opentracing.contrib.spring.web.interceptor.itest.common.app.WebServiceConfig;
+import io.opentracing.contrib.spring.web.ws.TracingClientInterceptorAdapter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -14,6 +17,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
+import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -30,6 +34,7 @@ import io.opentracing.contrib.spring.web.interceptor.itest.common.app.TracingBea
 import io.opentracing.contrib.spring.web.interceptor.itest.common.app.WebSecurityConfig;
 import io.opentracing.contrib.web.servlet.filter.ServletFilterSpanDecorator;
 import io.opentracing.contrib.web.servlet.filter.TracingFilter;
+import org.springframework.ws.client.core.support.WebServiceGatewaySupport;
 
 
 /**
@@ -41,6 +46,8 @@ import io.opentracing.contrib.web.servlet.filter.TracingFilter;
 @Import({TracingBeansConfiguration.class,
         WebSecurityConfig.class,
         TestController.class,
+        WebServiceConfig.class,
+        TestEndpoint.class
 })
 public class SpringBootConfiguration extends WebMvcConfigurerAdapter {
 
@@ -59,6 +66,18 @@ public class SpringBootConfiguration extends WebMvcConfigurerAdapter {
     public RestTemplate restTemplate(RestTemplateBuilder builder, Tracer tracer) {
         return builder.additionalInterceptors(new TracingRestTemplateInterceptor(tracer))
                 .build();
+    }
+
+    @Bean
+    public WebServiceGatewaySupport webServiceGatewaySupport(Tracer tracer) {
+        WeatherWsClient weatherWsClient = new WeatherWsClient();
+        TracingClientInterceptorAdapter clientInterceptorAdapter = new TracingClientInterceptorAdapter(tracer);
+        weatherWsClient.setInterceptors(new TracingClientInterceptorAdapter[] { clientInterceptorAdapter });
+        Jaxb2Marshaller marshaller = new Jaxb2Marshaller();
+        marshaller.setContextPath("io.opentracing.example.test_service");
+        weatherWsClient.getWebServiceTemplate().setMarshaller(marshaller);
+        weatherWsClient.getWebServiceTemplate().setUnmarshaller(marshaller);
+        return weatherWsClient;
     }
 
     @Override

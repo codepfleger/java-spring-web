@@ -97,15 +97,17 @@ public class TracingClientInterceptorAdapter extends ClientInterceptorAdapter {
     public void afterCompletion(MessageContext messageContext, Exception ex) throws WebServiceClientException {
         Span span = tracer.activeSpan();
 
-        for (ClientInterceptorAdapterSpanDecorator decorator : decorators) {
-            try {
-                decorator.onCompletion(messageContext, span);
-            } catch (RuntimeException e) {
-                logger.error("Exception during decorating span", e);
+        if(span != null) {
+            for (ClientInterceptorAdapterSpanDecorator decorator : decorators) {
+                try {
+                    decorator.onCompletion(messageContext, span);
+                } catch (RuntimeException e) {
+                    logger.error("Exception during decorating span", e);
+                }
             }
-        }
 
-        tracer.scopeManager().active().close();
+            tracer.scopeManager().active().close();
+        }
 
         super.afterCompletion(messageContext, ex);
     }

@@ -1,0 +1,20 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://opentracing.io/example/test-service" elementFormDefault="qualified">
+
+    <xs:element name="testTheServiceRequest">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="foo" type="xs:string"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="testTheServiceResponse">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="bar" type="xs:string"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+</xs:schema>
